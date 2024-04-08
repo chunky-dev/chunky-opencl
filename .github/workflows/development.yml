@@ -2,9 +2,6 @@ name: Development
 
 on:
   push:
-    branches-ignore:
-      # Stable is not development!
-      - stable
   workflow_dispatch:
 
 jobs:
@@ -12,19 +9,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+
     - name: Set up JDK 17
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
         java-version: '17'
         java-package: jdk
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+
     - name: Build with Gradle
       run: ./gradlew build
+
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2.2.2
+      uses: actions/upload-artifact@v4
       with:
         name: ChunkyClPlugin
-        path: build/libs/ChunkyClPlugin.jar
+        path: build/libs/chunky-opencl.jar
