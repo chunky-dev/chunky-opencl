@@ -60,10 +60,6 @@ public class ClContext {
         // Search for include headers
         HashMap<String, cl_program> headerFiles = new HashMap<>();
 
-        // Fake `opencl.h` header
-        headerFiles.put("../opencl.h", clCreateProgramWithSource(context, 1, new String[] { "" },
-                null, null));
-
         // Load headers
         readHeaders(kernel, headerFiles);
 

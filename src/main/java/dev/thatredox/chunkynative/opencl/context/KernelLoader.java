@@ -10,9 +10,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.function.BiFunction;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class KernelLoader {
     private static final KernelLoader instance = new KernelLoader();
+    private static final Pattern openclIncludeMatcher = Pattern.compile(
+            "^\\h*#include\\h*\"\\.\\./opencl\\.h\"\\h*$", Pattern.MULTILINE);
 
     private final BiFunction<String, String, String> rawSourceReader;
     private final boolean hotReload;
@@ -54,7 +58,12 @@ public class KernelLoader {
      * @return OpenCL program.
      */
     public static cl_program loadProgram(ClContext context, String base, String kernelName) {
-        return context.loadProgram(file -> instance.rawSourceReader.apply(base, file), kernelName);
+        return context.loadProgram(file -> {
+            String program = instance.rawSourceReader.apply(base, file);
+            Matcher matcher = openclIncludeMatcher.matcher(program);
+            program = matcher.replaceFirst("// #include \"../opencl.h\"");
+            return program;
+        }, kernelName);
     }
 
     public static boolean canHotReload() {
