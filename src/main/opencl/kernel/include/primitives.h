@@ -313,9 +313,10 @@ Quad Quad_new(__global const int* quadModels, int index) {
 
 bool Quad_intersect(Quad self, Ray ray, IntersectionRecord* record) {
     float3 n = normalize(cross(self.xv, self.yv));
+    bool doubleSided = self.flags & 1;
     
     float denom = dot(ray.direction, n);
-    if (denom < -EPS) {
+    if (denom < -EPS || (doubleSided && denom > EPS)) {
         float t = -(dot(ray.origin, n) - dot(n, self.origin)) / denom;
         if (t > -EPS && t < record->distance) {
             float3 pt = ray.origin + ray.direction*t - self.origin;
