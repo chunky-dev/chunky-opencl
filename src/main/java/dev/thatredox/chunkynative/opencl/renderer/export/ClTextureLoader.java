@@ -75,10 +75,12 @@ public class ClTextureLoader extends AbstractTextureLoader implements AutoClosea
 
     private static boolean insertTex(ArrayList<boolean[][]> layers, AtlasTexture tex) {
         int l = 0;
+        int blockWidth = Math.max(1, tex.getWidth() / 16);
+        int blockHeight = Math.max(1, tex.getHeight() / 16);
         for (boolean[][] layer : layers) {
             for (int x = 0; x < 256; x++) {
                 for (int y = 0; y < 256; y++) {
-                    if (insertAt(x, y, tex.getWidth()/16, tex.getHeight()/16, layer)) {
+                    if (insertAt(x, y, blockWidth, blockHeight, layer)) {
                         tex.setLocation(x, y, l);
                         return true;
                     }
