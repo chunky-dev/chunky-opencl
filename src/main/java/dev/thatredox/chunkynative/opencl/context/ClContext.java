@@ -84,10 +84,53 @@ public class ClContext {
         cl_program[] includePrograms = new cl_program[includeNames.length];
         Arrays.setAll(includePrograms, i -> headerFiles.get(includeNames[i]));
 
+        CL.setExceptionsEnabled(false);
         int code = clCompileProgram(kernelProgram, 1, deviceArray, "-cl-std=CL1.2 -Werror",
                 includePrograms.length, includePrograms, includeNames, null, null);
         if (code != CL_SUCCESS) {
-            throw new RuntimeException("Program build failed with error code: " + code);
+            String error;
+            switch (code) {
+                case CL_INVALID_PROGRAM:
+                    error = "CL_INVALID_PROGRAM";
+                    break;
+                case CL_INVALID_VALUE:
+                    error = "CL_INVALID_VALUE";
+                    break;
+                case CL_INVALID_DEVICE:
+                    error = "CL_INVALID_DEVICE";
+                    break;
+                case CL_INVALID_COMPILER_OPTIONS:
+                    error = "CL_INVALID_COMPILER_OPTIONS";
+                    break;
+                case CL_INVALID_OPERATION:
+                    error = "CL_INVALID_OPERATION";
+                    break;
+                case CL_COMPILER_NOT_AVAILABLE:
+                    error = "CL_COMPILER_NOT_AVAILABLE";
+                    break;
+                case CL_COMPILE_PROGRAM_FAILURE:
+                    error = "CL_COMPILE_PROGRAM_FAILURE";
+                    break;
+                case CL_OUT_OF_RESOURCES:
+                    error = "CL_OUT_OF_RESOURCES";
+                    break;
+                case CL_OUT_OF_HOST_MEMORY:
+                    error = "CL_OUT_OF_HOST_MEMORY";
+                    break;
+                default:
+                    error = "Code " + code;
+                    break;
+            }
+            CL.setExceptionsEnabled(true);
+            se.llbit.log.Log.error("Failed to build CL program: " + error);
+
+            long[] size = new long[1];
+            clGetProgramBuildInfo(kernelProgram, deviceArray[0], CL.CL_PROGRAM_BUILD_LOG, 0, null, size);
+
+            byte[] buffer = new byte[(int)size[0]];
+            clGetProgramBuildInfo(kernelProgram, deviceArray[0], CL.CL_PROGRAM_BUILD_LOG, buffer.length, Pointer.to(buffer), null);
+
+            throw new RuntimeException("Failed to build CL program with error: " + error + "\n" + new String(buffer, 0, buffer.length-1));
         }
 
         return clLinkProgram(context, 1, deviceArray, "", 1,
