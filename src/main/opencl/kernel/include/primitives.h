@@ -393,7 +393,7 @@ Triangle Triangle_new(__global const int* trigModels, int index) {
     return t;
 }
 
-bool Triangle_intersect(Triangle self, Ray ray, IntersectionRecord* record) {
+bool Triangle_intersect(Triangle self, image2d_array_t atlas, MaterialPalette materialPalette, Ray ray, IntersectionRecord* record, MaterialSample* sample) {
     float3 pvec, qvec, tvec;
 
     pvec = cross(ray.direction, self.e2);
@@ -424,14 +424,19 @@ bool Triangle_intersect(Triangle self, Ray ray, IntersectionRecord* record) {
 
     if (t > EPS && t < record->distance) {
         float w = 1 - u - v;
-        record->texCoord = (float2) (
+        float2 texCoord = (float2) (
             self.t1.x * u + self.t2.x * v + self.t3.x * w,
             self.t1.y * u + self.t2.y * v + self.t3.y * w
         );
-        record->normal = self.n;
-        record->material = self.material;
-        record->distance = t;
-        return true;
+
+        Material material = Material_get(materialPalette, self.material);
+        if (Material_sample(material, atlas, texCoord, sample)) {
+            record->texCoord = texCoord;
+            record->normal = self.n;
+            record->material = self.material;
+            record->distance = t;
+            return true;
+        }
     }
 
     return false;

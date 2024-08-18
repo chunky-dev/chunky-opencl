@@ -36,8 +36,8 @@ bool closestIntersect(Scene self, image2d_array_t atlas, Ray ray, IntersectionRe
 
         bool hit = false;
         hit |= Octree_octreeIntersect(self.octree, atlas, self.blockPalette, self.materialPalette, self.drawDepth, tempRay, &tempRecord, sample);
-//        hit |= Bvh_intersect(self.worldBvh, tempRay, &tempRecord);
-//        hit |= Bvh_intersect(self.actorBvh, tempRay, &tempRecord);
+        hit |= Bvh_intersect(self.worldBvh, atlas, self.materialPalette, tempRay, &tempRecord, sample);
+        hit |= Bvh_intersect(self.actorBvh, atlas, self.materialPalette, tempRay, &tempRecord, sample);
 
         if (!hit) {
             return false;
