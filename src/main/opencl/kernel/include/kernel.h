@@ -35,9 +35,9 @@ bool closestIntersect(Scene self, image2d_array_t atlas, Ray ray, IntersectionRe
         }
 
         bool hit = false;
-        hit |= Octree_octreeIntersect(self.octree, self.blockPalette, self.drawDepth, tempRay, &tempRecord);
-        hit |= Bvh_intersect(self.worldBvh, tempRay, &tempRecord);
-        hit |= Bvh_intersect(self.actorBvh, tempRay, &tempRecord);
+        hit |= Octree_octreeIntersect(self.octree, atlas, self.blockPalette, self.materialPalette, self.drawDepth, tempRay, &tempRecord, sample);
+//        hit |= Bvh_intersect(self.worldBvh, tempRay, &tempRecord);
+//        hit |= Bvh_intersect(self.actorBvh, tempRay, &tempRecord);
 
         if (!hit) {
             return false;
@@ -45,15 +45,9 @@ bool closestIntersect(Scene self, image2d_array_t atlas, Ray ray, IntersectionRe
 
         distance += tempRecord.distance;
 
-        Material material = Material_get(self.materialPalette, tempRecord.material);
-        if (!Material_sample(material, atlas, tempRecord.texCoord, sample)) {
-            distance += OFFSET;
-            continue;
-        }
-
         *record = tempRecord;
         record->distance = distance;
-        *mat = material;
+        *mat = Material_get(self.materialPalette, record->material);
         return true;
     }
     return false;

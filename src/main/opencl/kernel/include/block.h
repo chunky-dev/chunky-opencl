@@ -27,7 +27,7 @@ BlockPalette BlockPalette_new(__global const int* blockPalette, __global const i
     return p;
 }
 
-bool BlockPalette_intersectNormalizedBlock(BlockPalette self, int block, int3 blockPosition, Ray ray, IntersectionRecord* record) {
+bool BlockPalette_intersectNormalizedBlock(BlockPalette self, image2d_array_t atlas, MaterialPalette materialPalette, int block, int3 blockPosition, Ray ray, IntersectionRecord* record, MaterialSample* sample) {
     // ANY_TYPE. Should not be intersected.
     if (block == 0x7FFFFFFE) {
         return false;
@@ -40,6 +40,8 @@ bool BlockPalette_intersectNormalizedBlock(BlockPalette self, int block, int3 bl
     Ray tempRay = ray;
     tempRay.origin = ray.origin - int3toFloat3(blockPosition);
 
+    IntersectionRecord tempRecord = *record;
+
     switch (modelType) {
         default:
         case 0: {
@@ -47,46 +49,55 @@ bool BlockPalette_intersectNormalizedBlock(BlockPalette self, int block, int3 bl
         }
         case 1: {
             AABB box = AABB_new(0, 1, 0, 1, 0, 1);
-            hit = AABB_full_intersect(box, tempRay, record);
-            record->material = modelPointer;
-            break;
+            hit = AABB_full_intersect(box, tempRay, &tempRecord);
+            tempRecord.material = modelPointer;
+            if (hit) {
+                Material material = Material_get(materialPalette, tempRecord.material);
+                hit = Material_sample(material, atlas, tempRecord.texCoord, sample);
+                if (hit) {
+                    *record =tempRecord;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
         }
         case 2: {
             int boxes = self.aabbModels[modelPointer];
             for (int i = 0; i < boxes; i++) {
                 int offset = modelPointer + 1 + i * TEX_AABB_SIZE;
                 TexturedAABB box = TexturedAABB_new(self.aabbModels, offset);
-                hit |= TexturedAABB_intersect(box, tempRay, record);
+                hit |= TexturedAABB_intersect(box, atlas, materialPalette, tempRay, record, sample);
             }
-            break;
+            return hit;
         }
         case 3: {
             int quads = self.quadModels[modelPointer];
             for (int i = 0; i < quads; i++) {
                 int offset = modelPointer + 1 + i * QUAD_SIZE;
                 Quad q = Quad_new(self.quadModels, offset);
-                hit |= Quad_intersect(q, tempRay, record);
+                hit |= Quad_intersect(q, atlas, materialPalette, tempRay, record, sample);
             }
-            break;
+            return hit;
         }
         case 4: {
             // Light block
             if (ray.flags & RAY_PREVIEW) {
                 AABB box = AABB_new(0, 1, 0, 1, 0, 1);
-                hit = AABB_full_intersect(box, tempRay, record);
-                record->material = modelPointer;
+                hit = AABB_full_intersect(box, tempRay, &tempRecord);
+                tempRecord.material = modelPointer;
             } else if (ray.flags & RAY_INDIRECT) {
                 AABB box = AABB_new(0.125, 0.875, 0.125, 0.875, 0.125, 0.875);
-                hit = AABB_full_intersect(box, tempRay, record);
-                record->material = modelPointer;
+                hit = AABB_full_intersect(box, tempRay, &tempRecord);
+                tempRecord.material = modelPointer;
             } else {
                 return false;
             }
-            break;
+            *record = tempRecord;
+            return hit;
         }
     }
-
-    return hit;
 }
 
 #endif

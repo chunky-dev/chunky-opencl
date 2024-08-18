@@ -4,6 +4,7 @@
 #include "../opencl.h"
 #include "rt.h"
 #include "constants.h"
+#include "material.h"
 
 typedef struct {
     float xmin;
@@ -217,7 +218,7 @@ TexturedAABB TexturedAABB_new(__global const int* aabbModels, int index) {
     return b;
 }
 
-bool TexturedAABB_intersect(TexturedAABB self, Ray ray, IntersectionRecord* record) {
+bool TexturedAABB_intersect(TexturedAABB self, image2d_array_t atlas, MaterialPalette materialPalette, Ray ray, IntersectionRecord* record, MaterialSample* sample) {
     IntersectionRecord tempRecord = *record;
 
     bool hit = AABB_full_intersect_map_2(self.box, ray, &tempRecord);
@@ -271,8 +272,13 @@ bool TexturedAABB_intersect(TexturedAABB self, Ray ray, IntersectionRecord* reco
         tempRecord.texCoord = tempRecord.texCoord.yx;
     }
 
-    *record = tempRecord;
-    return true;
+    Material material = Material_get(materialPalette, tempRecord.material);
+    if (Material_sample(material, atlas, tempRecord.texCoord, sample)) {
+        *record = tempRecord;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
@@ -311,7 +317,7 @@ Quad Quad_new(__global const int* quadModels, int index) {
     return q;
 }
 
-bool Quad_intersect(Quad self, Ray ray, IntersectionRecord* record) {
+bool Quad_intersect(Quad self, image2d_array_t atlas, MaterialPalette materialPalette, Ray ray, IntersectionRecord* record, MaterialSample* sample) {
     float3 n = normalize(cross(self.xv, self.yv));
     bool doubleSided = self.flags & 1;
     
@@ -324,11 +330,15 @@ bool Quad_intersect(Quad self, Ray ray, IntersectionRecord* record) {
             float v = dot(pt, self.yv) / dot(self.yv, self.yv);
 
             if (u >= 0 && u <= 1 && v >= 0 && v <= 1) {
-                record->texCoord = (float2) (self.uv.x + (u * self.uv.y), self.uv.z + (v * self.uv.w));
-                record->normal = n;
-                record->distance = t;
-                record->material = self.material;
-                return true;
+                float2 texCoord = (float2) (self.uv.x + (u * self.uv.y), self.uv.z + (v * self.uv.w));
+                Material material = Material_get(materialPalette, self.material);
+                if (Material_sample(material, atlas, texCoord, sample)) {
+                    record->texCoord = texCoord;
+                    record->normal = n;
+                    record->distance = t;
+                    record->material = self.material;
+                    return true;
+                }
             }
         }
     }

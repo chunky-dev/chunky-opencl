@@ -40,7 +40,7 @@ int Octree_get(Octree* self, int x, int y, int z) {
     return -data;
 }
 
-bool Octree_octreeIntersect(Octree self, BlockPalette palette, int drawDepth, Ray ray, IntersectionRecord* record) {
+bool Octree_octreeIntersect(Octree self, image2d_array_t atlas, BlockPalette palette, MaterialPalette materialPalette, int drawDepth, Ray ray, IntersectionRecord* record, MaterialSample* sample) {
     float distMarch = 0;
 
     float3 invD = 1 / ray.direction;
@@ -87,7 +87,7 @@ bool Octree_octreeIntersect(Octree self, BlockPalette palette, int drawDepth, Ra
 
         // Get block data if there is an intersection
         if (data != ray.material) {
-            if (BlockPalette_intersectNormalizedBlock(palette, data, bp, ray, record)) {
+            if (BlockPalette_intersectNormalizedBlock(palette, atlas, materialPalette, data, bp, ray, record, sample)) {
                 return true;
             }
         }
