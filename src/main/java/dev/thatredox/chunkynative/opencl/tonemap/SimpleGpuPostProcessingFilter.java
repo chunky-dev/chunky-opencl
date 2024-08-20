@@ -12,23 +12,21 @@ import java.util.function.Consumer;
 import static org.jocl.CL.*;
 import static org.jocl.CL.clReleaseKernel;
 
-public class SimpleGpuPostProcessingFilter implements PostProcessingFilter {
+public abstract class SimpleGpuPostProcessingFilter implements PostProcessingFilter {
     private final String name;
     private final String description;
     private final String id;
 
     private final String entryPoint;
-    private final Consumer<cl_kernel> argumentConsumer;
 
-    public SimpleGpuPostProcessingFilter(String name, String description, String id,
-                                         String entryPoint, Consumer<cl_kernel> argumentConsumer) {
+    public SimpleGpuPostProcessingFilter(String name, String description, String id, String entryPoint) {
         this.name = name;
         this.description = description;
         this.id = id;
-
-        this.argumentConsumer = argumentConsumer;
         this.entryPoint = entryPoint;
     }
+
+    protected abstract void addArguments(cl_kernel kernel);
 
     @Override
     public void processFrame(int width, int height, double[] input, BitmapImage output, double exposure, TaskTracker.Task task) {
@@ -45,7 +43,7 @@ public class SimpleGpuPostProcessingFilter implements PostProcessingFilter {
             clSetKernelArg(kernel, 2, Sizeof.cl_float, Pointer.to(new float[] {(float) exposure}));
             clSetKernelArg(kernel, 3, Sizeof.cl_mem, Pointer.to(inputMem.get()));
             clSetKernelArg(kernel, 4, Sizeof.cl_mem, Pointer.to(outputMem.get()));
-            argumentConsumer.accept(kernel);
+            this.addArguments(kernel);
 
             cl_event event = new cl_event();
             clEnqueueNDRangeKernel(ctx.context.queue, kernel, 1, null,

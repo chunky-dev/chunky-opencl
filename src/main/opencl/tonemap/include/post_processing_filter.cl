@@ -49,3 +49,56 @@ __kernel void filter(
     pixel.w = 1;
     res[gid] = color_to_argb(pixel);
 }
+
+
+float ue4_filter_process_component(float c, float saturation, float slope, float toe, float shoulder, float blackClip, float whiteClip, float ta, float sa) {
+    float logc = log10(c);
+
+    if (logc >= ta && logc <= sa) {
+        return saturation * (slope * (logc + 0.733) + 0.18);
+    }
+    if (logc > sa) {
+        return saturation * (1 + whiteClip - (2 * (1 + whiteClip - shoulder)) / (1 + exp(((2 * slope) / (1 + whiteClip - shoulder)) * (logc - sa))));
+    }
+    return saturation * ((2 * (1 + blackClip - toe)) / (1 + exp(-((2 * slope) / (1 + blackClip - toe)) * (logc - ta))) - blackClip);
+}
+__kernel void ue4_filter(
+        const int width,
+        const int height,
+        const float exposure,
+        __global const imposter_double* input,
+        __global unsigned int* res,
+
+        const float saturation,
+        const float slope,
+        const float toe,
+        const float shoulder,
+        const float blackClip,
+        const float whiteClip,
+        const float ta,
+        const float sa
+) {
+    int gid = get_global_id(0);
+    int offset = gid * 3;
+
+    float color_float[3];
+    for (int i = 0; i < 3; i++) {
+        color_float[i] = idouble_to_float(input[offset + i]);
+    }
+    float3 color = vload3(0, color_float);
+    color *= exposure;
+
+    color *= 1.25f;
+    color = (float3) (
+        ue4_filter_process_component(color.x, saturation, slope, toe, shoulder, blackClip, whiteClip, ta, sa),
+        ue4_filter_process_component(color.y, saturation, slope, toe, shoulder, blackClip, whiteClip, ta, sa),
+        ue4_filter_process_component(color.z, saturation, slope, toe, shoulder, blackClip, whiteClip, ta, sa)
+    );
+    color = clamp(color, 0.0f, 1.0f);
+    color = pow(color, 1.0 / 2.0);
+
+    float4 pixel;
+    pixel.xyz = color;
+    pixel.w = 1;
+    res[gid] = color_to_argb(pixel);
+}

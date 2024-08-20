@@ -5,6 +5,7 @@ import dev.thatredox.chunkynative.opencl.renderer.ClSceneLoader;
 import dev.thatredox.chunkynative.opencl.renderer.OpenClPathTracingRenderer;
 import dev.thatredox.chunkynative.opencl.renderer.OpenClPreviewRenderer;
 import dev.thatredox.chunkynative.opencl.tonemap.ChunkyImposterGpuPostProcessingFilter;
+import dev.thatredox.chunkynative.opencl.tonemap.UE4ToneMappingImposterGpuPostprocessingFilter;
 import dev.thatredox.chunkynative.opencl.ui.ChunkyClTab;
 import se.llbit.chunky.Plugin;
 import se.llbit.chunky.main.Chunky;
@@ -12,6 +13,7 @@ import se.llbit.chunky.main.ChunkyOptions;
 import se.llbit.chunky.model.BlockModel;
 import se.llbit.chunky.renderer.RenderController;
 import se.llbit.chunky.renderer.postprocessing.PostProcessingFilters;
+import se.llbit.chunky.renderer.postprocessing.UE4ToneMappingFilter;
 import se.llbit.chunky.ui.ChunkyFx;
 import se.llbit.chunky.ui.render.RenderControlsTab;
 import se.llbit.chunky.ui.render.RenderControlsTabTransformer;
@@ -61,6 +63,9 @@ public class ChunkyCl implements Plugin {
         addImposterFilter("TONEMAP1", ChunkyImposterGpuPostProcessingFilter.Filter.TONEMAP1);
         addImposterFilter("TONEMAP2", ChunkyImposterGpuPostProcessingFilter.Filter.ACES);
         addImposterFilter("TONEMAP3", ChunkyImposterGpuPostProcessingFilter.Filter.HABLE);
+
+        PostProcessingFilters.getPostProcessingFilterFromId("UE4_FILMIC").ifPresent(filter ->
+                PostProcessingFilters.addPostProcessingFilter(new UE4ToneMappingImposterGpuPostprocessingFilter((UE4ToneMappingFilter) filter)));
     }
 
     private static void addImposterFilter(String id, ChunkyImposterGpuPostProcessingFilter.Filter f) {
