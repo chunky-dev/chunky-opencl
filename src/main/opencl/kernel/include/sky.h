@@ -5,15 +5,18 @@
 #include "rt.h"
 #include "textureAtlas.h"
 #include "random.h"
+#include "material.h"
 
 typedef struct {
     int flags;
     int textureSize;
     int texture;
     float intensity;
+    float luminosity;
     float3 su;
     float3 sv;
     float3 sw;
+    float4 color;
 } Sun;
 
 Sun Sun_new(__global const int* data) {
@@ -22,6 +25,8 @@ Sun Sun_new(__global const int* data) {
     sun.textureSize = data[1];
     sun.texture = data[2];
     sun.intensity = as_float(data[3]);
+    sun.luminosity = as_float(data[6]);
+    sun.color = colorFromArgb(data[7]);
     
     float phi = as_float(data[4]);
     float theta = as_float(data[5]);
@@ -54,10 +59,16 @@ bool Sun_intersect(Sun self, image2d_array_t atlas, Ray ray, MaterialSample* sam
     if (a >= 0 && a < width2) {
         float b = M_PI_2_F - acos(dot(direction, self.sv)) + width;
         if (b >= 0 && b < width2) {
-            float4 color = Atlas_read_uv(a / width2, b / width2, 
-                                         self.texture, self.textureSize, atlas);
-            color *= self.intensity;
-            sample->color += color;
+            if (ray.flags & RAY_INDIRECT) {
+                float4 color = self.color;
+                color *= self.luminosity;
+                sample->color += color;
+            } else {
+                float4 color = Atlas_read_uv(a / width2, b / width2,
+                                             self.texture, self.textureSize, atlas);
+                color *= self.intensity;
+                sample->color += color;
+            }
             return true;
         }
     }
