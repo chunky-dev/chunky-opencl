@@ -78,6 +78,7 @@ __kernel void render(
     __global const int* bufferSpp,
     __global const int* width,
     __global const int* height,
+    __global const int* rayDepth,
     __global float* res
 
 ) {
@@ -104,8 +105,7 @@ __kernel void render(
     float3 color = (float3) (0.0);
     float3 throughput = (float3) (1.0);
 
-    // TODO: Adjustable ray depth
-    for (int depth = 0; depth < 5; depth++) {
+    for (int depth = 0; depth < *rayDepth; depth++) {
         IntersectionRecord record = IntersectionRecord_new();
         MaterialSample sample;
         Material material;
