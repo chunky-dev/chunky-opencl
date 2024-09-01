@@ -1,6 +1,8 @@
 package dev.thatredox.chunkynative.util;
 
 import se.llbit.log.Log;
+import se.llbit.util.annotation.NotNull;
+import se.llbit.util.annotation.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.Objects;
@@ -8,6 +10,7 @@ import java.util.Objects;
 public class Reflection {
     private Reflection() {}
 
+    @NotNull
     @SuppressWarnings("unchecked")
     public static <T> T getFieldValue(Object obj, String name, Class<T> cls) {
         try {
@@ -25,6 +28,26 @@ public class Reflection {
             Log.error("Failed to obtain field. Do you have the wrong version of Chunky?", e);
             throw new RuntimeException(e);
         }
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static <T> T getFieldValueNullable(Object obj, String name, Class<T> cls) {
+        try {
+            Field field = obj.getClass().getDeclaredField(name);
+            field.setAccessible(true);
+            Object o = field.get(obj);
+            if (o == null) return null;
+            if (cls.isAssignableFrom(o.getClass())) return (T) o;
+
+            throw new RuntimeException(String.format(
+                    "Field %s was of type %s. Expected type %s. Do you have the wrong version of Chunky?",
+                    name, o.getClass(), cls));
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            Log.error("Failed to obtain field. Do you have the wrong version of Chunky?", e);
+            throw new RuntimeException(e);
+        }
+
     }
 
     /**

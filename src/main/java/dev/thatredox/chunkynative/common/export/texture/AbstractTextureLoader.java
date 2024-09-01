@@ -1,12 +1,11 @@
 package dev.thatredox.chunkynative.common.export.texture;
 
+import dev.thatredox.chunkynative.opencl.renderer.export.textureexporter.TextureExporter;
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import se.llbit.chunky.resources.Texture;
-
-import java.util.Arrays;
 
 public abstract class AbstractTextureLoader {
     private final static int MAX_IDENTITIES_PER_RECORD = 3;
@@ -19,14 +18,14 @@ public abstract class AbstractTextureLoader {
         recordMap = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<Texture>() {
             @Override
             public int hashCode(Texture o) {
-                return Arrays.hashCode(o.getData());
+                return TextureExporter.hashCode(o);
             }
 
             @Override
             public boolean equals(Texture a, Texture b) {
                 if (a == b) return true;
                 if (a == null || b == null) return false;
-                return Arrays.equals(a.getData(), b.getData()) && a.getWidth() == b.getWidth() && a.getHeight() == b.getHeight();
+                return TextureExporter.equals(a, b);
             }
         });
         identityRecordMap = new Reference2ObjectOpenHashMap<>();

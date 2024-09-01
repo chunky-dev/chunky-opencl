@@ -1,6 +1,7 @@
 package dev.thatredox.chunkynative.opencl.renderer.export;
 
 import dev.thatredox.chunkynative.opencl.context.ClContext;
+import dev.thatredox.chunkynative.opencl.renderer.export.textureexporter.TextureExporter;
 import dev.thatredox.chunkynative.opencl.util.ClMemory;
 import org.jocl.*;
 
@@ -10,7 +11,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import se.llbit.chunky.resources.Texture;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -118,15 +118,15 @@ public class ClTextureLoader extends AbstractTextureLoader implements AutoClosea
     }
 
     protected static class AtlasTexture implements Comparable<AtlasTexture> {
-        public final Texture texture;
+        public final TextureExporter exporter;
         public final TextureRecord record;
         public final int size;
         public int location = 0xFFFFFFFF;
 
         protected AtlasTexture(Texture tex, TextureRecord record) {
-            this.texture = tex;
+            this.exporter = TextureExporter.getExporter(tex);
             this.record = record;
-            this.size = (tex.getWidth() << 16) | tex.getHeight();
+            this.size = (exporter.getWidth() << 16) | exporter.getHeight();
         }
 
         public void commit() {
@@ -158,19 +158,7 @@ public class ClTextureLoader extends AbstractTextureLoader implements AutoClosea
         }
 
         public byte[] getTexture() {
-            byte[] out = new byte[getHeight() * getWidth() * 4];
-            int index = 0;
-            for (int y = 0; y < getHeight(); y++) {
-                for (int x = 0; x < getWidth(); x++) {
-                    float[] rgba = texture.getColor(x, y);
-                    out[index] = (byte) (rgba[0] * 255.0);
-                    out[index+1] = (byte) (rgba[1] * 255.0);
-                    out[index+2] = (byte) (rgba[2] * 255.0);
-                    out[index+3] = (byte) (rgba[3] * 255.0);
-                    index += 4;
-                }
-            }
-            return out;
+            return exporter.getTexture();
         }
 
         @Override
@@ -180,7 +168,7 @@ public class ClTextureLoader extends AbstractTextureLoader implements AutoClosea
 
         @Override
         public int hashCode() {
-            return Arrays.hashCode(texture.getData());
+            return exporter.textureHashCode();
         }
 
         @Override
@@ -188,8 +176,8 @@ public class ClTextureLoader extends AbstractTextureLoader implements AutoClosea
             if (o == null) return false;
             if (!(o instanceof AtlasTexture)) return false;
             AtlasTexture other = (AtlasTexture) o;
-            return this.size == other.size &&
-                    Arrays.equals(this.texture.getData(), other.texture.getData());
+            if (this.size != other.size) return false;
+            return this.exporter.equals(other.exporter);
         }
     }
 }
