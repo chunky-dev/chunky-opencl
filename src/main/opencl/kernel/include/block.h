@@ -52,6 +52,13 @@ bool BlockPalette_intersectNormalizedBlock(BlockPalette self, image2d_array_t at
             hit = AABB_full_intersect(box, tempRay, &tempRecord);
             tempRecord.material = modelPointer;
             if (hit) {
+                if (tempRecord.normal.x > 0 || tempRecord.normal.z < 0) {
+                    tempRecord.texCoord.x = 1 - tempRecord.texCoord.x;
+                }
+                if (tempRecord.normal.y > 0) {
+                    tempRecord.texCoord.y = 1 - tempRecord.texCoord.y;
+                }
+
                 Material material = Material_get(materialPalette, tempRecord.material);
                 hit = Material_sample(material, atlas, tempRecord.texCoord, sample);
                 if (hit) {
