@@ -1,0 +1,164 @@
+{
+  "sdfVersion": 9,
+  "name": "Cornell Box",
+  "width": 960,
+  "height": 540,
+  "fullWidth": 0,
+  "fullHeight": 0,
+  "cropX": 0,
+  "cropY": 0,
+  "yClipMin": -64,
+  "yClipMax": 320,
+  "yMin": -64,
+  "yMax": 320,
+  "exposure": 4.0,
+  "postprocess": "GAMMA",
+  "outputMode": "PNG",
+  "renderTime": 3803,
+  "spp": 0,
+  "sppTarget": 16,
+  "branchCount": 10,
+  "rayDepth": 25,
+  "pathTrace": true,
+  "dumpFrequency": 500,
+  "saveSnapshots": false,
+  "emittersEnabled": false,
+  "emitterIntensity": 13.0,
+  "fancierTranslucency": true,
+  "transmissivityCap": 1.0,
+  "sunSamplingStrategy": "FAST",
+  "waterShadingStrategy": "TILED_NORMALMAP",
+  "waterOpacity": 0.42,
+  "waterVisibility": 9.0,
+  "useCustomWaterColor": false,
+  "fog": {
+    "mode": "NONE",
+    "uniformDensity": 0.0,
+    "skyFogDensity": 1.0,
+    "layers": [],
+    "color": {
+      "red": 0.42814502293337064,
+      "green": 0.5858024691358026,
+      "blue": 1.0
+    },
+    "fastFog": true
+  },
+  "biomeColorsEnabled": true,
+  "transparentSky": false,
+  "waterWorldEnabled": false,
+  "waterWorldHeight": 63.0,
+  "waterWorldHeightOffsetEnabled": true,
+  "waterWorldClipEnabled": true,
+  "hideUnknownBlocks": false,
+  "world": {
+    "path": "/home/redox/.minecraft/saves/Cornell Box",
+    "dimension": 0
+  },
+  "camera": {
+    "name": "camera 1",
+    "lockCamera": false,
+    "position": {
+      "x": 8.501,
+      "y": -57.6,
+      "z": 11.9
+    },
+    "orientation": {
+      "roll": 0.0,
+      "pitch": -1.4835298641951802,
+      "yaw": -1.5708137800874167
+    },
+    "projectionMode": "PINHOLE",
+    "fov": 90.0,
+    "dof": "Infinity",
+    "focalOffset": 2.0,
+    "shift": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "apertureShape": "CIRCLE"
+  },
+  "sun": {
+    "altitude": 1.0471975511965976,
+    "azimuth": 1.2566370614359172,
+    "intensity": 1.25,
+    "luminosity": 100.0,
+    "apparentBrightness": 1.25,
+    "radius": 0.03,
+    "modifySunTexture": false,
+    "color": {
+      "red": 1.0,
+      "green": 1.0,
+      "blue": 1.0
+    },
+    "apparentColor": {
+      "red": 1.0,
+      "green": 1.0,
+      "blue": 1.0
+    },
+    "importanceSampling": {
+      "chance": 0.1,
+      "radius": 1.2
+    },
+    "drawTexture": true
+  },
+  "sky": {
+    "skyYaw": 0.0,
+    "skyPitch": 0.0,
+    "skyRoll": 0.0,
+    "skyMirrored": true,
+    "skyExposure": 1.0,
+    "skyLight": 1.0,
+    "apparentSkyLight": 1.0,
+    "mode": "SIMULATED",
+    "horizonOffset": 0.0,
+    "cloudsEnabled": false,
+    "cloudSize": 12.0,
+    "cloudOffset": {
+      "x": 0.0,
+      "y": 128.0,
+      "z": 0.0
+    },
+    "gradient": [
+      {
+        "rgb": "0BABC7",
+        "pos": 0.0
+      },
+      {
+        "rgb": "75AAFF",
+        "pos": 1.0
+      }
+    ],
+    "color": {
+      "red": 0.0,
+      "green": 0.0,
+      "blue": 0.0
+    },
+    "simulatedSky": "Preetham",
+    "skyCacheResolution": 128
+  },
+  "cameraPresets": {},
+  "materials": {},
+  "chunkList": [
+    [
+      0,
+      0
+    ]
+  ],
+  "octreeImplementation": "PACKED",
+  "emitterSamplingStrategy": "NONE",
+  "preventNormalEmitterWithSampling": true,
+  "animationTime": 0.0,
+  "renderer": "ChunkyClRenderer",
+  "previewRenderer": "ChunkyClPreviewRenderer",
+  "renderActors": true,
+  "entityLoadingPreferences": {
+    "se.llbit.chunky.entity.PlayerEntity": false,
+    "se.llbit.chunky.entity.Book": true,
+    "se.llbit.chunky.entity.ArmorStand": true,
+    "se.llbit.chunky.entity.PaintingEntity": true,
+    "se.llbit.chunky.entity.BeaconBeam": true,
+    "other": true
+  },
+  "bvhImplementation": "SAH_MA",
+  "additionalData": {}
+}
