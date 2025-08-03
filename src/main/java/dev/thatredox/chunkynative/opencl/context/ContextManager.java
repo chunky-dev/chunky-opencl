@@ -43,7 +43,7 @@ public class ContextManager {
         public final cl_program simpleFilter;
 
         private Tonemap(ClContext context) {
-            this.simpleFilter = KernelLoader.loadProgram(context, "tonemap", "post_processing_filter.cl");
+            this.simpleFilter = KernelLoader.loadProgram(context, "tonemap", "post_processing_filter.c");
         }
     }
 
@@ -51,7 +51,7 @@ public class ContextManager {
         public final cl_program kernel;
 
         private Renderer(ClContext context) {
-            this.kernel = KernelLoader.loadProgram(context, "kernel", "rayTracer.cl");
+            this.kernel = KernelLoader.loadProgram(context, "kernel", "rayTracer.c");
         }
     }
 }
