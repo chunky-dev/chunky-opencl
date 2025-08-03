@@ -2,6 +2,7 @@ package dev.thatredox.chunkynative.opencl;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.main.ChunkyOptions;
 import se.llbit.chunky.main.CommandLineOptions;
@@ -24,11 +25,17 @@ class CornellBoxRenderTest {
         new CommandLineOptions(new String[] { "-download-mc", "1.21.8" });
     }
 
+    private static String getMcPath() {
+        return new File(new File(PersistentSettings.settingsDirectory(), "resources"), "minecraft.jar").getPath();
+    }
+
     @Test
     void render() throws IOException, InterruptedException, NoSuchFieldException, IllegalAccessException {
         // Initialize Chunky
         Chunky.loadDefaultTextures();
-        Chunky chunky = new Chunky(ChunkyOptions.getDefaults());
+        ChunkyOptions options = ChunkyOptions.getDefaults();
+        options.addResourcePacks(getMcPath());
+        Chunky chunky = new Chunky(options);
         Field chunkyHeadless = chunky.getClass().getDeclaredField("headless");
         chunkyHeadless.setAccessible(true);
         chunkyHeadless.set(chunky, true);
@@ -57,7 +64,9 @@ class CornellBoxRenderTest {
     void preview_render() throws IOException, InterruptedException, NoSuchFieldException, IllegalAccessException {
         // Initialize Chunky
         Chunky.loadDefaultTextures();
-        Chunky chunky = new Chunky(ChunkyOptions.getDefaults());
+        ChunkyOptions options = ChunkyOptions.getDefaults();
+        options.addResourcePacks(getMcPath());
+        Chunky chunky = new Chunky(options);
         Field chunkyHeadless = chunky.getClass().getDeclaredField("headless");
         chunkyHeadless.setAccessible(true);
         chunkyHeadless.set(chunky, true);
