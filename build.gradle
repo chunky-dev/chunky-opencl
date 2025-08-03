@@ -49,6 +49,7 @@ jar {
 test {
     useJUnitPlatform()
     dependsOn 'cleanTest'
+    enabled = gradle.startParameter.taskNames.contains("test")
 }
 
 defaultTasks 'jar'
