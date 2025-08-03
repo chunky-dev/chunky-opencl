@@ -71,17 +71,19 @@ public class OpenClPathTracingRenderer implements Renderer {
                 clCreateBuffer(context.context.context, CL_MEM_READ_ONLY, Sizeof.cl_int, null, null));
         ClMemory bufferSpp = new ClMemory(
                 clCreateBuffer(context.context.context, CL_MEM_READ_ONLY, Sizeof.cl_int, null, null));
-        ClIntBuffer clWidth = new ClIntBuffer(scene.canvasConfig.getWidth(), context.context);
-        ClIntBuffer clHeight = new ClIntBuffer(scene.canvasConfig.getHeight(), context.context);
+        ClIntBuffer clCanvasConfig = new ClIntBuffer(new int[] {
+                scene.canvasConfig.getWidth(), scene.canvasConfig.getHeight(),
+                scene.canvasConfig.getCropWidth(), scene.canvasConfig.getCropHeight(),
+                scene.canvasConfig.getCropX(), scene.canvasConfig.getCropY()
+        }, context.context);
         ClIntBuffer clRayDepth = new ClIntBuffer(scene.getRayDepth(), context.context);
 
         try (ClCamera ignored1 = camera;
              ClMemory ignored2 = buffer;
              ClMemory ignored3 = randomSeed;
              ClMemory ignored4 = bufferSpp;
-             ClIntBuffer ignored5 = clWidth;
-             ClIntBuffer ignored6 = clHeight;
-             ClIntBuffer ignored7 = clRayDepth) {
+             ClIntBuffer ignored5 = clCanvasConfig;
+             ClIntBuffer ignored6 = clRayDepth) {
 
             // Generate initial camera rays
             camera.generate(renderLock, true);
@@ -131,8 +133,7 @@ public class OpenClPathTracingRenderer implements Renderer {
 
                 clSetKernelArg(kernel, argIndex++, Sizeof.cl_mem, Pointer.to(randomSeed.get()));
                 clSetKernelArg(kernel, argIndex++, Sizeof.cl_mem, Pointer.to(bufferSpp.get()));
-                clSetKernelArg(kernel, argIndex++, Sizeof.cl_mem, Pointer.to(clWidth.get()));
-                clSetKernelArg(kernel, argIndex++, Sizeof.cl_mem, Pointer.to(clHeight.get()));
+                clSetKernelArg(kernel, argIndex++, Sizeof.cl_mem, Pointer.to(clCanvasConfig.get()));
                 clSetKernelArg(kernel, argIndex++, Sizeof.cl_mem, Pointer.to(clRayDepth.get()));
                 clSetKernelArg(kernel, argIndex++, Sizeof.cl_mem, Pointer.to(buffer.get()));
                 clEnqueueNDRangeKernel(context.context.queue, kernel, 1, null,

@@ -57,13 +57,15 @@ public class OpenClPreviewRenderer implements Renderer {
         ClCamera camera = new ClCamera(scene, context.context);
         ClMemory buffer = new ClMemory(clCreateBuffer(context.context.context, CL_MEM_WRITE_ONLY,
                 (long) Sizeof.cl_int * imageData.length, null, null));
-        ClIntBuffer clWidth = new ClIntBuffer(scene.canvasConfig.getWidth(), context.context);
-        ClIntBuffer clHeight = new ClIntBuffer(scene.canvasConfig.getHeight(), context.context);
+        ClIntBuffer clCanvasConfig = new ClIntBuffer(new int[] {
+                scene.canvasConfig.getWidth(), scene.canvasConfig.getHeight(),
+                scene.canvasConfig.getCropWidth(), scene.canvasConfig.getCropHeight(),
+                scene.canvasConfig.getCropX(), scene.canvasConfig.getCropY()
+        }, context.context);
 
         try (ClCamera ignored1 = camera;
              ClMemory ignored2 = buffer;
-             ClIntBuffer ignored3 = clWidth;
-             ClIntBuffer ignored4 = clHeight) {
+             ClIntBuffer ignored3 = clCanvasConfig) {
 
             // Generate the camera rays
             camera.generate(null, false);
@@ -92,8 +94,7 @@ public class OpenClPreviewRenderer implements Renderer {
             clSetKernelArg(kernel, argIndex++, Sizeof.cl_mem, Pointer.to(sceneLoader.getSky().skyIntensity.get()));
             clSetKernelArg(kernel, argIndex++, Sizeof.cl_mem, Pointer.to(sceneLoader.getSun().get()));
 
-            clSetKernelArg(kernel, argIndex++, Sizeof.cl_mem, Pointer.to(clWidth.get()));
-            clSetKernelArg(kernel, argIndex++, Sizeof.cl_mem, Pointer.to(clHeight.get()));
+            clSetKernelArg(kernel, argIndex++, Sizeof.cl_mem, Pointer.to(clCanvasConfig.get()));
             clSetKernelArg(kernel, argIndex++, Sizeof.cl_mem, Pointer.to(buffer.get()));
             clEnqueueNDRangeKernel(context.context.queue, kernel, 1, null,
                     new long[]{imageData.length}, null, 0, null,

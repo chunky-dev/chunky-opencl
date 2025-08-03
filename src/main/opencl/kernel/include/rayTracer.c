@@ -11,8 +11,7 @@
 Ray ray_to_camera(
         const __global int* projectorType,
         const __global float* cameraSettings,
-        const __global int* width,
-        const __global int* height,
+        const __global int* canvasConfig,
         int gid,
         Random random
 ) {
@@ -23,10 +22,17 @@ Ray ray_to_camera(
         float3 m2s = vload3(2, cameraSettings);
         float3 m3s = vload3(3, cameraSettings);
 
-        float halfWidth = (*width) / (2.0 * (*height));
-        float invHeight = 1.0 / (*height);
-        float x = -halfWidth + ((gid % (*width)) + Random_nextFloat(random)) * invHeight;
-        float y = -0.5 + ((gid / (*width)) + Random_nextFloat(random)) * invHeight;
+        int width = canvasConfig[0];
+        int height = canvasConfig[1];
+        int fullWidth = canvasConfig[2];
+        int fullHeight = canvasConfig[3];
+        int cropX = canvasConfig[4];
+        int cropY = canvasConfig[5];
+
+        float halfWidth = fullWidth / (2.0 * fullHeight);
+        float invHeight = 1.0 / fullHeight;
+        float x = -halfWidth + ((gid % width) + Random_nextFloat(random) + cropX) * invHeight;
+        float y = -0.5 + ((gid / width) + Random_nextFloat(random) + cropY) * invHeight;
 
         switch (*projectorType) {
             case 0:
@@ -76,8 +82,7 @@ __kernel void render(
 
     __global const int* randomSeed,
     __global const int* bufferSpp,
-    __global const int* width,
-    __global const int* height,
+    __global const int* canvasConfig,
     __global const int* rayDepth,
     __global float* res
 
@@ -97,7 +102,7 @@ __kernel void render(
     unsigned int randomState = *randomSeed + gid;
     Random random = &randomState;
     Random_nextState(random);
-    Ray ray = ray_to_camera(projectorType, cameraSettings, width, height, gid, random);
+    Ray ray = ray_to_camera(projectorType, cameraSettings, canvasConfig, gid, random);
 
     ray.material = 0;
     ray.flags = 0;
@@ -158,17 +163,17 @@ __kernel void preview(
     __global const float* skyIntensity,
     __global const int* sunData,
 
-    __global const int* width,
-    __global const int* height,
+    __global const int* canvasConfig,
     __global int* res
 ) {
     int gid = get_global_id(0);
-    int px = gid % *width;
-    int py = gid / *width;
+
+    int px = gid % canvasConfig[0] + canvasConfig[4];
+    int py = gid / canvasConfig[0] + canvasConfig[5];
 
     // Crosshairs?
-    if ((px == *width / 2 && (py >= *height / 2 - 5 && py <= *height / 2 + 5)) ||
-        (py == *height / 2 && (px >= *width / 2 - 5 && px <= *width / 2 + 5))) {
+    if ((px == canvasConfig[2] / 2 && (py >= canvasConfig[3] / 2 - 5 && py <= canvasConfig[3] / 2 + 5)) ||
+        (py == canvasConfig[3] / 2 && (px >= canvasConfig[2] / 2 - 5 && px <= canvasConfig[2] / 2 + 5))) {
         res[gid] = 0xFFFFFFFF;
         return;
     }
@@ -187,7 +192,7 @@ __kernel void preview(
     Random random = &randomState;
     Random_nextState(random);
 
-    Ray ray = ray_to_camera(projectorType, cameraSettings, width, height, gid, random);
+    Ray ray = ray_to_camera(projectorType, cameraSettings, canvasConfig, gid, random);
 
     IntersectionRecord record = IntersectionRecord_new();
     MaterialSample sample;

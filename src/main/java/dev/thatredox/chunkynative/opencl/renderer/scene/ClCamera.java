@@ -75,11 +75,15 @@ public class ClCamera implements AutoCloseable {
         
         int width = scene.canvasConfig.getWidth();
         int height = scene.canvasConfig.getHeight();
+        int fullWidth = scene.canvasConfig.getCropWidth();
+        int fullHeight = scene.canvasConfig.getCropHeight();
+        int cropX = scene.canvasConfig.getCropX();
+        int cropY = scene.canvasConfig.getCropY();
 
         float[] rays = new float[width * height * 3 * 2];
 
-        double halfWidth = width / (2.0 * height);
-        double invHeight = 1.0 / height;
+        double halfWidth = fullWidth / (2.0 * fullHeight);
+        double invHeight = 1.0 / fullHeight;
 
         Camera cam = scene.camera();
 
@@ -92,7 +96,7 @@ public class ClCamera implements AutoCloseable {
                 float ox = jitter ? random.nextFloat(): 0.5f;
                 float oy = jitter ? random.nextFloat(): 0.5f;
 
-                cam.calcViewRay(ray, -halfWidth + (i + ox) * invHeight, -0.5 + (j + oy) * invHeight);
+                cam.calcViewRay(ray, -halfWidth + (i + ox + cropX) * invHeight, -0.5 + (j + oy + cropY) * invHeight);
                 ray.o.sub(scene.getOrigin());
 
                 System.arraycopy(Util.vector3ToFloat(ray.o), 0, rays, offset, 3);
