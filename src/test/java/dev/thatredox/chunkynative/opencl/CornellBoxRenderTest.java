@@ -1,12 +1,12 @@
 package dev.thatredox.chunkynative.opencl;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.main.ChunkyOptions;
+import se.llbit.chunky.main.CommandLineOptions;
 import se.llbit.chunky.renderer.DefaultRenderManager;
-import se.llbit.chunky.renderer.RenderContext;
 import se.llbit.chunky.renderer.SceneProvider;
-import se.llbit.chunky.renderer.SnapshotControl;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.util.TaskTracker;
 
@@ -19,6 +19,11 @@ import java.lang.reflect.Field;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CornellBoxRenderTest {
+    @BeforeAll
+    static void download_mc() {
+        new CommandLineOptions(new String[] { "-download-mc", "1.21.8" });
+    }
+
     @Test
     void render() throws IOException, InterruptedException, NoSuchFieldException, IllegalAccessException {
         // Initialize Chunky
